@@ -162,10 +162,10 @@ try {
         -SearchFields ( ("EndDate,FiscalYearID,NumericYear,StartDate") -split ",") `
         -ReturnHashTable $false
             
-    Write-Verbose -Verbose "Available Fiscal Years"
+    Write-Information "Available Fiscal Years"
     foreach($fy in $DistrictFiscalYear)
     {
-        Write-Verbose -Verbose "[$($fy.FiscalYearID)] $($fy.NumericYear) - $($fy.StartDate) - $($fy.EndDate)"
+        Write-Information "[$($fy.FiscalYearID)] $($fy.NumericYear) - $($fy.StartDate) - $($fy.EndDate)"
     }
 
     $DistrictSchoolYear = get_data_objects `
@@ -174,10 +174,10 @@ try {
         -SearchFields ( ("SchoolYearID,Description,NumericYear") -split ",") `
         -ReturnHashTable $false
 
-    Write-Verbose -Verbose "Available School Years"
+    Write-Information "Available School Years"
     foreach($sy in $DistrictSchoolYear)
     {
-        Write-Verbose -Verbose "[$($sy.SchoolYearID)] $($sy.NumericYear)"
+        Write-Information "[$($sy.SchoolYearID)] $($sy.NumericYear)"
     }
     
     $DemographicsName = get_data_objects `
