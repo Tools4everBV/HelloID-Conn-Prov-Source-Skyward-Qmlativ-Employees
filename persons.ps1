@@ -152,11 +152,34 @@ function get_data_objects {
 #endregion Support Functions
 
 #region Execute
-$test = [System.Collections.ArrayList]@()
 try {
     #region Data
     Write-Information (get_system_metadata | ConvertTo-Json)
+    
+    $DistrictFiscalYear = get_data_objects `
+        -ModuleName "District" `
+        -ObjectName "FiscalYear" `
+        -SearchFields ( ("EndDate,FiscalYearID,NumericYear,StartDate") -split ",") `
+        -ReturnHashTable $false
+            
+    Write-Verbose -Verbose "Available Fiscal Years"
+    foreach($fy in $DistrictFiscalYear)
+    {
+        Write-Verbose -Verbose "[$($fy.FiscalYearID)] $($fy.NumericYear) - $($fy.StartDate) - $($fy.EndDate)"
+    }
 
+    $DistrictSchoolYear = get_data_objects `
+        -ModuleName "District" `
+        -ObjectName "SchoolYear" `
+        -SearchFields ( ("SchoolYearID,Description,NumericYear") -split ",") `
+        -ReturnHashTable $false
+
+    Write-Verbose -Verbose "Available School Years"
+    foreach($sy in $DistrictSchoolYear)
+    {
+        Write-Verbose -Verbose "[$($sy.SchoolYearID)] $($sy.NumericYear)"
+    }
+    
     $DemographicsName = get_data_objects `
         -ModuleName "Demographics" `
         -ObjectName "Name" `
