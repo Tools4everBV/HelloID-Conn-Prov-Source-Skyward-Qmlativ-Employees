@@ -248,7 +248,7 @@ try {
         -ObjectName "Employment" `
         -SearchFields @( ("EmploymentID,Comment,DistrictID,EmployeeID,EmploymentStatusID,EmploymentYears,EndDate,HireDate,IsTerminated,StartDate,TerminationID") -split ",") `
         -ReturnHashTable $true `
-        -HashTableKey "EmploymentID" 
+        -HashTableKey "EmployeeID" 
 
     $EmployeeEmploymentStatus = get_data_objects `
         -ModuleName "Employee" `
