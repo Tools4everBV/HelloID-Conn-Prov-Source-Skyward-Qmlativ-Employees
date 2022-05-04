@@ -28,7 +28,7 @@ By using this connector you will have the ability to import data into HelloID:
 Note: Ensure that the Skyward API Server has been installed. Refer to the Skyward documentation for more information.
 https://support.skyward.com/DeptDocs/Corporate/IT%20Services/Public%20Website/Technical%20Information/system/current_requirements/Api%20Server%20Launch%20kit.pdf
 
-To create a Secured User account within the Skyward database for your ClassLink Roster Server follow these steps below:
+To create a Secured User account within the Skyward database follow these steps below:
  1. Browse to “Product Setup – Skyward Contact Access – Secured User”.
  2. Click Add.
  3. Click the Organization button.
