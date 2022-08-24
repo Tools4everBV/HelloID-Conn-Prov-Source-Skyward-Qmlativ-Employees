@@ -240,7 +240,7 @@ try {
         -ObjectName "EmployeeDistrict" `
         -SearchFields @( ("EmployeeDistrictID,CheckLocationID,DistrictID,EmployeeID,HireDateOriginal,IsActive,StartDateOriginal,IsActive") -split ",") `
         -ReturnHashTable $true `
-        -HashTableKey "EmployeeDistrictID" 
+        -HashTableKey "EmployeeID" 
 
 
     $EmployeeEmployment = get_data_objects `
