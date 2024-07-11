@@ -7,18 +7,27 @@ $config = ConvertFrom-Json $configuration
 function get_oauth_access_token {
     [cmdletbinding()]
     Param (
-        [string]$BaseURI,
         [string]$ClientKey,
-        [string]$ClientSecret
+        [string]$ClientSecret,
+        [string]$IntegrationKey
     )
-    Process {
-        $pair = [System.Web.HTTPUtility]::UrlEncode($ClientKey) + ":" + [System.Web.HTTPUtility]::UrlEncode($ClientSecret)
-        $bytes = [System.Text.Encoding]::ASCII.GetBytes($pair)
-        $bear_token = [System.Convert]::ToBase64String($bytes)
-        $auth_headers = @{ Authorization = "Basic " + $bear_token }
-          
-        $uri = "$($BaseURI)/oauth/token?grant_type=client_credentials"
-        $result = Invoke-RestMethod -Method GET -Headers $auth_headers -Uri $uri -UseBasicParsing
+    Process
+    {
+        $headers = @{ 
+                            "Content-Type" = "application/x-www-form-urlencoded"
+                            "Suppress-Development-Permissions" = $true
+        }
+
+        $body = "grant_type=client_credentials&client_id={0}&client_secret={1}" -f [System.Web.HttpUtility]::UrlEncode($ClientKey), [System.Web.HttpUtility]::UrlEncode($ClientSecret)
+        
+        $uri =  "https://skyward-api.global.cloud.nimsuite.com/{0}/oauth/token" -f $IntegrationKey
+        Write-Information ($uri)
+        try{
+        $result = Invoke-RestMethod -Method POST -Headers $headers -Uri $uri -Body $body -UseBasicParsing
+        }catch
+        {
+            Write-Information ($error[0].exception.innerexception)
+        }
         @($result)
     }
 }
@@ -28,9 +37,9 @@ function get_system_metadata {
         Write-Information "Retrieving Access Token"
            
         $AccessToken = (get_oauth_access_token `
-                -BaseURI $config.BaseURI `
-                -ClientKey $config.ClientKey `
-                -ClientSecret $config.ClientSecret).access_token
+            -ClientKey $config.ClientKey `
+            -ClientSecret $config.ClientSecret `
+            -IntegrationKey $config.IntegrationKey).access_token
            
         $headers = @{ Authorization = "Bearer $($AccessToken)" }
     
@@ -60,9 +69,9 @@ function get_data_objects {
         Write-Information "Retrieving Access Token"
            
         $AccessToken = (get_oauth_access_token `
-                -BaseURI $config.BaseURI `
-                -ClientKey $config.ClientKey `
-                -ClientSecret $config.ClientSecret).access_token
+            -ClientKey $config.ClientKey `
+            -ClientSecret $config.ClientSecret `
+            -IntegrationKey $config.IntegrationKey).access_token
            
         $headers = @{ Authorization = "Bearer $($AccessToken)" }
    
@@ -183,14 +192,14 @@ try {
     $DemographicsName = get_data_objects `
         -ModuleName "Demographics" `
         -ObjectName "Name" `
-        -SearchFields ( ("NameID,Age,BirthDate,BirthMonthDay,BirthYear,Ethnicity,EthnicityAndRace,FirstName,Gender,Initials,IsCurrentStudent,IsEmployeeName,IsEmployeeNameForDistrict,IsGuardianName,LastName,MiddleName,NameKey,NameSuffixID,NameSuffixIDLegal,NameTitleID,NameTitleIDLegal,OccupationID,Race,SkywardID,TitledName") -split ",") `
+        -SearchFields ( ("NameID,Age,BirthDate,BirthMonthDay,BirthYear,Ethnicity,EthnicityAndRace,FirstName,Gender,Initials,IsCurrentStudent,IsEmployeeName,IsEmployeeNameForDistrict,IsGuardianName,LastName,MiddleName,NameKey,NameSuffixID,NameSuffixIDLegal,NameTitleID,NameTitleIDLegal,OccupationID,Race") -split ",") `
         -ReturnHashTable $true `
         -HashTableKey "NameID"
         
     $DemographicsNameAlias = get_data_objects `
         -ModuleName "Demographics" `
         -ObjectName "NameAlias" `
-        -SearchFields ( ("NameAliasID,FirstName,FullNameFL,IsLegalName,LastName,MiddleName,NameID,NameSuffixID,NameTitleID,Rank") -split ",") `
+        -SearchFields ( ("NameAliasID,FirstName,IsLegalName,LastName,MiddleName,NameID,NameSuffixID,NameTitleID,Rank") -split ",") `
         -ReturnHashTable $true `
         -HashTableKey "NameID" 
 
@@ -232,7 +241,7 @@ try {
     $EmployeeEmployee = get_data_objects `
         -ModuleName "Employee" `
         -ObjectName "Employee" `
-        -SearchFields @( ("EmployeeID,EmployeeNumber,EmployeeThirdPartyImportID,FullNameFL,FullNameFML,NameID") -split ",") `
+        -SearchFields @( ("EmployeeID,EmployeeNumber,NameID") -split ",") `
         -ReturnHashTable $false
 
     $EmployeeEmployeeDistrict = get_data_objects `
@@ -260,14 +269,14 @@ try {
     $Position = get_data_objects `
         -ModuleName "Position" `
         -ObjectName "Position" `
-        -SearchFields ( ("PositionID,BudgetedFTE,CalendarID,CurrentAssignmentFTE,DistrictID,EndDate,FiscalYearID,JobTypeID,PositionCodeIdentifier,PositionGroupID,PositionNumberID,PositionTypeID,StartDate") -split ",") `
+        -SearchFields ( ("PositionID,CalendarID,DistrictID,EndDate,FiscalYearID,JobTypeID,PositionCodeIdentifier,PositionGroupID,PositionNumberID,PositionTypeID,StartDate") -split ",") `
         -ReturnHashTable $true `
         -HashTableKey "PositionID" 
    
     $PositionAssignment = get_data_objects `
         -ModuleName "Position" `
         -ObjectName "Assignment" `
-        -SearchFields ( ("AssignmentID,EmployeeID,EmployeePlacementID,EndDate,EntitlementID,PercentEmployed,PositionID,PositionTypeEmployeeIdentifier,StartDate") -split ",") `
+        -SearchFields ( ("AssignmentID,EmployeeID,EmployeePlacementID,EndDate,PercentEmployed,PositionID,PositionTypeEmployeeIdentifier,StartDate") -split ",") `
         -ReturnHashTable $true `
         -HashTableKey "EmployeeID" 
    
@@ -281,7 +290,7 @@ try {
     $PositionPositionType = get_data_objects `
         -ModuleName "Position" `
         -ObjectName "PositionType" `
-        -SearchFields ( ("PositionTypeID,BudgetedFTE,Code,CodeDescription,Description,DistrictID,EntitlementID,FiscalYearID,PlanPositionDistributionsForPlanGroupFTE") -split ",") `
+        -SearchFields ( ("PositionTypeID,BudgetedFTE,Code,CodeDescription,Description,DistrictID,FiscalYearID,PlanPositionDistributionsForPlanGroupFTE") -split ",") `
         -ReturnHashTable $true `
         -HashTableKey "PositionTypeID" 
    
@@ -289,7 +298,7 @@ try {
     $SecurityUser = get_data_objects `
         -ModuleName "Security" `
         -ObjectName "User" `
-        -SearchFields ( ("UserID,EntityIDCurrent,FullNameFL,FullNameFML,FullNameLFM,IsActive,IsDeleted,NameID,Username") -split ",") `
+        -SearchFields ( ("UserID,IsActive,IsDeleted,NameID,Username") -split ",") `
         -ReturnHashTable $true `
         -HashTableKey "NameID" 
    
