@@ -7,18 +7,27 @@ $config = ConvertFrom-Json $configuration
 function get_oauth_access_token {
     [cmdletbinding()]
     Param (
-        [string]$BaseURI,
         [string]$ClientKey,
-        [string]$ClientSecret
+        [string]$ClientSecret,
+        [string]$IntegrationKey
     )
-    Process {
-        $pair = [System.Web.HTTPUtility]::UrlEncode($ClientKey) + ":" + [System.Web.HTTPUtility]::UrlEncode($ClientSecret)
-        $bytes = [System.Text.Encoding]::ASCII.GetBytes($pair)
-        $bear_token = [System.Convert]::ToBase64String($bytes)
-        $auth_headers = @{ Authorization = "Basic " + $bear_token }
-          
-        $uri = "$($BaseURI)/oauth/token?grant_type=client_credentials"
-        $result = Invoke-RestMethod -Method GET -Headers $auth_headers -Uri $uri -UseBasicParsing
+    Process
+    {
+        $headers = @{ 
+                            "Content-Type" = "application/x-www-form-urlencoded"
+                            "Suppress-Development-Permissions" = $true
+        }
+
+        $body = "grant_type=client_credentials&client_id={0}&client_secret={1}" -f [System.Web.HttpUtility]::UrlEncode($ClientKey), [System.Web.HttpUtility]::UrlEncode($ClientSecret)
+        
+        $uri =  "https://skyward-api.global.cloud.nimsuite.com/{0}/oauth/token" -f $IntegrationKey
+        #Write-Information ($uri)
+        try{
+        $result = Invoke-RestMethod -Method POST -Headers $headers -Uri $uri -Body $body -UseBasicParsing
+        }catch
+        {
+            Write-Information ($error[0].exception)
+        }
         @($result)
     }
 }
@@ -28,9 +37,9 @@ function get_system_metadata {
         Write-Information "Retrieving Access Token"
            
         $AccessToken = (get_oauth_access_token `
-                -BaseURI $config.BaseURI `
-                -ClientKey $config.ClientKey `
-                -ClientSecret $config.ClientSecret).access_token
+            -ClientKey $config.ClientKey `
+            -ClientSecret $config.ClientSecret `
+            -IntegrationKey $config.IntegrationKey).access_token
            
         $headers = @{ Authorization = "Bearer $($AccessToken)" }
     
@@ -60,9 +69,9 @@ function get_data_objects {
         Write-Information "Retrieving Access Token"
            
         $AccessToken = (get_oauth_access_token `
-                -BaseURI $config.BaseURI `
-                -ClientKey $config.ClientKey `
-                -ClientSecret $config.ClientSecret).access_token
+            -ClientKey $config.ClientKey `
+            -ClientSecret $config.ClientSecret `
+            -IntegrationKey $config.IntegrationKey).access_token
            
         $headers = @{ Authorization = "Bearer $($AccessToken)" }
    
