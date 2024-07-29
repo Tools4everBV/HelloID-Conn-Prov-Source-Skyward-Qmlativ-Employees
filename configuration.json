@@ -28,6 +28,15 @@
     }
   },
   {
+    "key": "IntegrationKey",
+    "type": "input",
+    "defaultValue": "",
+    "templateOptions": {
+      "label": "Integration Key",
+      "required": true
+    }
+  },
+  {
     "key": "PageSize",
     "type": "input",
     "defaultValue": "500",
